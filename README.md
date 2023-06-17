@@ -23,5 +23,5 @@ pip install -r requirements.txt
 
 ## Notes
 Make sure to use real info for your tasks to be able to test. Otherwise it will result in a shipping error.
-Information on imap you can find here for example: https://hotter.io/docs/email-accounts/app-password-gmail/
+Information on imap you can find here for example: https://hotter.io/docs/email-accounts/app-password-gmail/.
 If you get a chromedriver exception, make sure to redownload chromedriver matching your actual version in your browser.
