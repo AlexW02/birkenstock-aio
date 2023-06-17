@@ -33,7 +33,7 @@ class Birkenstock():
             data = json.loads(config_json.read())
             self.mail = data['imap_mail']
             self.pw = data['imap_password']
-            self.catchall = data['catchall']
+            self.catchall = data['catchall/gmail']
 
         self.s = requests.Session()
         self.taskNumb = str(threadNumb)
@@ -44,7 +44,23 @@ class Birkenstock():
 
         self.fname = names.get_first_name(gender=random.choice(['male', 'female']))
         self.lname = names.get_last_name()
-        self.email = f'{self.fname.lower()}.{self.lname.lower()}{str(randint(1000000000, 9999999999))}{self.catchall}'
+        if "gmail" in self.catchall:
+            emails = list()
+            username_length = len(self.catchall.split("@")[0])
+            combinations = pow(2, username_length - 1)
+            padding = "{0:0" + str(username_length - 1) + "b}"
+            for i in range(0, combinations):
+                bin = padding.format(i)
+                full_email = ""
+                for j in range(0, username_length - 1):
+                    full_email += (self.catchall[j]);
+                    if bin[j] == "1":
+                        full_email += "."
+                full_email += (self.catchall[j + 1])
+                emails.append(full_email + "@gmail.com")
+            self.email = random.choice(emails)
+        else:
+            self.email = f'{self.fname.lower()}.{self.lname.lower()}{str(randint(1000000000, 9999999999))}{self.catchall}'
         self.delay = 2
 
         self.proxy_handling()
@@ -175,7 +191,6 @@ class Birkenstock():
         s_print(self.yellow(message='Subscribing To Newsletter...'))
 
         self.headers = {
-            'Host': 'www.birkenstock.com',
             'sec-ch-ua': self.secChUa,
             'accept': 'application/json, text/javascript, */*; q=0.01',
             'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
