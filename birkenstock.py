@@ -1,4 +1,4 @@
-import requests, time, json, datetime, random, names, string, re, ctypes, urllib3
+import requests, time, json, datetime, random, names, string, re, ctypes, urllib3, sqlite3
 from discord_webhook import DiscordWebhook, DiscordEmbed
 from random import randint
 from threading import Lock
@@ -389,7 +389,7 @@ class Birkenstock():
                         except:
                             self.size = 'N/A'
                         try:
-                            self.price = r.text.split('<span class="price-sales">')[1].split(' ')[0]+"€"
+                            self.price = r.text.split('<span class="price-sales">')[1].split(' ')[0].replace(',', '.')
                         except:
                             self.price = 'N/A'
                         try:
@@ -853,26 +853,32 @@ class Birkenstock():
                             if r.text.split('<title>')[1].split('</title>')[0] == 'Redirect to payment provider':
                                 s_print(self.green(message='Successful Checkout: ' + r.headers['Location']))
                                 incSuccess()
-                                webhook = DiscordWebhook(url=self.webhook, avatar_url='https://famousfoxes.com/hd/861.png', username="AlexAIO")
-                                embed = DiscordEmbed(title=f":flushed: Complete Payment :flushed:", url=r.headers['Location'], color=0x023F85)
-                                embed.add_embed_field(name="Store", value="Birkenstock")
-                                embed.add_embed_field(name="Product", value=self.name)
-                                embed.add_embed_field(name="Size", value=self.size)
-                                embed.add_embed_field(name="Price", value=self.price)
-                                embed.add_embed_field(name="Payment Method", value="PayPal")
-                                if self.discount != '':
-                                    embed.add_embed_field(name="Discount Code", value=self.discount)
-                                embed.set_thumbnail(url=self.image)
-                                embed.set_footer(icon_url='https://famousfoxes.com/hd/861.png', text='by AlexW#9999')
-                                embed.set_timestamp()
-                                webhook.add_embed(embed)
-                                webhook.execute()
+                                try:
+                                    webhook = DiscordWebhook(url=self.webhook, avatar_url='https://www.birkenstock.com/on/demandware.static/Sites-DE-Site/-/default/dwcc26e7d6/images/logo.png', username="BirkenstockAIO")
+                                    embed = DiscordEmbed(title=f"Complete Payment", url=r.headers['Location'], color=0x023F85)
+                                    embed.add_embed_field(name="Store", value="Birkenstock")
+                                    embed.add_embed_field(name="Product", value=self.name)
+                                    embed.add_embed_field(name="Size", value=self.size)
+                                    embed.add_embed_field(name="Price", value=self.price)
+                                    embed.add_embed_field(name="Payment Method", value="PayPal")
+                                    if self.discount != '':
+                                        embed.add_embed_field(name="Discount Code", value=self.discount)
+                                    embed.set_thumbnail(url=self.image)
+                                    embed.set_timestamp()
+                                    webhook.add_embed(embed)
+                                    webhook.execute()
+                                except:
+                                    pass
+                                conn = sqlite3.connect('checkouts.db')
+                                conn.execute(f"INSERT INTO CHECKOUTS (NAME,SIZE,IMAGE,PRICE,LINK,DISCOUNT) VALUES ('{self.name}', '{self.size}', '{self.image}', {float(self.price)},'{r.headers['Location']}','{self.discount}')")
+                                conn.commit()
+                                conn.close()
                                 break
                             else:
                                 s_print(self.red(message='Failed Checkout'))
                                 break
-                        except:
-                            s_print(self.red(message='Failed Checkout'))
+                        except Exception as e:
+                            s_print(self.red(message=f'Submit Order: {type(e).__name__}'))
                             break
                     elif r.status_code == 429:
                         s_print(self.red(message='Submit Order: Rate Limited [429] - Retrying...'))
