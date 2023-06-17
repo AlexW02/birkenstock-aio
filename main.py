@@ -14,7 +14,7 @@ try:
         pass
     csvfile.close()
 except FileNotFoundError:
-    with open('tasks.csv', 'w', newline='') as csvfile:
+    with open('birkenstock_tasks.csv', 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(['PID', 'Email', 'First Name', 'Last Name', 'Street', 'House Number', 'Phone', 'Post Code', 'City', 'State', 'Discount', 'Delay', 'Webhook'])
     csvfile.close()
@@ -35,7 +35,7 @@ except FileNotFoundError:
         data = {
             "imap_mail": "",
             "imap_password": "",
-            "catchall": "",
+            "catchall/gmail": "",
         }
         json.dump(data, config)
     config.close()
@@ -52,17 +52,17 @@ print('''  ____  _      _                  _             _              _____ __
 print("%s  Welcome to BirkenstockAIO v" % (fg('cyan'))+version+"!%s\n" % (attr('reset')))
 print("%s  [1] - Checkout Module%s" % (fg('yellow'), attr('reset')))
 print("%s  [2] - Discount Generator%s" % (fg('yellow'), attr('reset')))
+print("%s  [3] - Product Scraper%s" % (fg('yellow'), attr('reset')))
 def select():
     while(1):
         option = input("%s  Please select a module: %s" % (fg('yellow'), attr('reset')))
         try:
             option = int(option)
-            if option in [1,2]:
+            if option in [1,2,3]:
                 break
             else:
-                print(f"%s  {str(option)} is not a valid option. Try again with a number from 1 to 2.%s" % (fg('red'), attr('reset')))
-        except Exception as e:
-            print(e)
+                print(("%s  "+str(option)+" is not a valid option. Try again with a number from 1 to 3:%s" % (fg('red'), attr('reset'))))
+        except:
             print(("%s  Invalid input! Try again:%s" % (fg('red'), attr('reset'))))
     clear = lambda: os.system('cls')
     clear()
@@ -102,4 +102,14 @@ def select():
         for i in range(int(amount)):
             t = Thread(target=birkenstocknewsletter.Birkenstock, args=(i+1,))
             t.start()
+    elif option == 3:
+        import birkenstockscraper
+        product = input("%sPlease enter your desired product url: %s" % (fg('yellow'), attr('reset')))
+        clear = lambda: os.system('cls')
+        clear()
+        t = Thread(target=birkenstockscraper.Birkenstock, args=(product,))
+        t.start()
+    else:
+        print(("%s  "+str(option)+" is not a valid option. Try again with a number from 1 to 3:%s" % (fg('red'), attr('reset'))))
+        select()
 select()
