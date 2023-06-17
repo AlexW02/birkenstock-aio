@@ -1,0 +1,11 @@
+beautifulsoup4==4.10.0
+clint==0.5.1
+colorama==0.4.4
+colored==1.4.3
+discord_webhook==0.16.3
+imap_tools==0.55.0
+names==0.3.0
+Requests==2.31.0
+selenium==4.10.0
+selenium_stealth==1.0.6
+urllib3==1.26.8
