@@ -124,7 +124,13 @@ class Birkenstock():
         chromeOptions.add_argument("--disable-web-security")
         chromeOptions.add_argument(f'user-agent={self.userAgent}')
         chromeOptions.add_experimental_option("useAutomationExtension", False)
-        driver = webdriver.Chrome(executable_path="chromedriver.exe",chrome_options=chromeOptions)
+        while True:
+            try:
+                driver = webdriver.Chrome(executable_path="chromedriver.exe",chrome_options=chromeOptions)
+                break
+            except:
+                s_print(self.red(message='Chromedriver exception - recheck your chromedriver.exe'))
+                time.sleep(5)
         r = """
         <html>
         <head></head>
