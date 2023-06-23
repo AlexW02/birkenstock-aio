@@ -4,21 +4,22 @@ from threading import Lock
 from requests.exceptions import ProxyError
 from bs4 import BeautifulSoup
 import warnings
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore") # ignore warnings
 
 s_print_lock = Lock()
-def s_print(*a, **b):
+def s_print(*a, **b): # print function with lock to prevent messy outputs and rather having a clean output line by line
         with s_print_lock:
             print(*a, **b)
 
-ctypes.windll.kernel32.SetConsoleTitleW(f"AlexAIO[Birkenstock]")
+ctypes.windll.kernel32.SetConsoleTitleW(f"AlexAIO[Birkenstock]") # set console title
 
 class Birkenstock():
     def __init__(self, product):
 
-        self.s = requests.Session()
-        self.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36'
-        self.secChUa = '"Not?A_Brand";v="8", "Chromium";v="113", "Google Chrome";v="113"'
+        self.s = requests.Session() # create session
+        self.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36' # user agent
+        self.secChUa = '"Not?A_Brand";v="8", "Chromium";v="113", "Google Chrome";v="113"' # sec-ch-ua
+        # initialize product variable
         self.product = product
 
         s_print("[" + (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')[:-3] + "]" + f' [Birkenstock] Starting task...'))
@@ -27,6 +28,7 @@ class Birkenstock():
         s_print(self.white(message="Window is closing in 10 seconds..."))
         time.sleep(10)
 
+    # print color initialization
     def yellow(self, message):
         return "[" + (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')[:-3] + "]" + colored.yellow(f' [Birkenstock] {message}'))
     
@@ -46,6 +48,7 @@ class Birkenstock():
 
         s_print(self.yellow(message='Scraping Product...'))
 
+        # initialize headers
         self.headers = {
             'authority': 'www.birkenstock.com',
             'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
@@ -66,26 +69,26 @@ class Birkenstock():
 
         while True:
             try:
-                r = self.s.get(self.product, headers=self.headers)
+                r = self.s.get(self.product, headers=self.headers) # GET request to get product page
                 if r.status_code == 200:
                     try:
-                        soup = BeautifulSoup(r.text,"html.parser")
-                        name = soup.find("meta",{"property":"og:title"})['content'].split(" |")[0]
-                        pid = soup.find("span",{"class":"top-productnumber"})['data-productnumber']
-                        image = soup.find("meta",{"property":"og:image"})['content']
-                        price = float(r.text.split('<span class="price-standard">')[1].split(' ')[0].strip().replace(",","."))
-                        sizes = re.findall(r'(?<=data-size=")[^"]*', r.text)
-                        sizes = "\n".join([x for x in sizes if float(x) > 30])
-                        sizePids = json.loads(r.text.split(',"eans":')[1].split("}}]);")[0])                
-                        sizePids = "\n".join([x for x in sizePids if sizePids.index(x) < len(sizes)])
-                        conn = sqlite3.connect('products.db')
-                        cursor = conn.cursor()
-                        cursor.execute("SELECT rowid FROM PRODUCTS WHERE PID = ?", (pid,))
-                        data=cursor.fetchall()
-                        if len(data) == 0:
-                            conn.execute(f"INSERT INTO PRODUCTS (NAME,PID,IMAGE,PRICE,SIZES,SIZE_PIDS) VALUES ('{name}', '{pid}', '{image}', {price},'{sizes}','{sizePids}')")
-                            conn.commit()
-                        conn.close()
+                        soup = BeautifulSoup(r.text,"html.parser") # parse html to beautiful soup module
+                        name = soup.find("meta",{"property":"og:title"})['content'].split(" |")[0] # get product name
+                        pid = soup.find("span",{"class":"top-productnumber"})['data-productnumber'] # get product id
+                        image = soup.find("meta",{"property":"og:image"})['content'] # get product image
+                        price = float(r.text.split('<span class="price-standard">')[1].split(' ')[0].strip().replace(",",".")) # get product price
+                        sizes = re.findall(r'(?<=data-size=")[^"]*', r.text) # get all product sizes even sold out ones with regex
+                        sizes = "\n".join([x for x in sizes if float(x) > 30]) # join all sizes together and remove sizes below 30 to have only EU sizes in a list format so 1 size has 1 line
+                        sizePids = json.loads(r.text.split(',"eans":')[1].split("}}]);")[0]) # get all product size pids with regex     
+                        sizePids = "\n".join([x for x in sizePids if sizePids.index(x) < len(sizes)]) # join all size pids together and remove size pids that are not in the size list
+                        conn = sqlite3.connect('products.db') # connect to products database
+                        cursor = conn.cursor() # create cursor
+                        cursor.execute("SELECT rowid FROM PRODUCTS WHERE PID = ?", (pid,)) # check if product is already in database
+                        data=cursor.fetchall() # fetch data from database
+                        if len(data) == 0: # if product is not in database
+                            conn.execute(f"INSERT INTO PRODUCTS (NAME,PID,IMAGE,PRICE,SIZES,SIZE_PIDS) VALUES ('{name}', '{pid}', '{image}', {price},'{sizes}','{sizePids}')") # insert product into database
+                            conn.commit() # commit changes
+                        conn.close() # close connection to database
                         s_print(self.green(message=f'Successfully Scraped Product: {name} - {pid}'))
                         break
                     except Exception as e:

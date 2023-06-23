@@ -4,10 +4,10 @@ from random import randint
 from threading import Lock
 from requests.exceptions import ProxyError
 from clint.textui import colored
-urllib3.disable_warnings()
+urllib3.disable_warnings() # disable warnings
 
 s_print_lock = Lock()
-def s_print(*a, **b):
+def s_print(*a, **b): # print function with lock to prevent messy outputs and rather having a clean output line by line
         with s_print_lock:
             print(*a, **b)
 
@@ -16,14 +16,14 @@ global success
 carted = 0
 success = 0
 
-ctypes.windll.kernel32.SetConsoleTitleW(f"AlexAIO[Birkenstock] - Carted: {carted} | Success: {success}")
+ctypes.windll.kernel32.SetConsoleTitleW(f"AlexAIO[Birkenstock] - Carted: {carted} | Success: {success}") # set console title
 
-def incCart():
+def incCart(): # increment carted counter
     global carted
     carted += 1
     ctypes.windll.kernel32.SetConsoleTitleW(f"AlexAIO[Birkenstock] - Carted: {carted} | Success: {success}")
 
-def incSuccess():
+def incSuccess(): # increment success counter
     global success
     success += 1
     ctypes.windll.kernel32.SetConsoleTitleW(f"AlexAIO[Birkenstock] - Carted: {carted} | Success: {success}")
@@ -31,28 +31,29 @@ def incSuccess():
 class Birkenstock():
     def __init__(self, pid, email, fname, lname, address, number, phone, postcode, city, region, discount, delay, webhook, threadNumb):
 
-        self.s = requests.Session()
-        self.taskNumb = str(threadNumb)
-        self.userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36"
-        self.secChUa = '"Not?A_Brand";v="8", "Chromium";v="113", "Google Chrome";v="113"'
+        self.s = requests.Session() # create session
+        self.taskNumb = str(threadNumb) # thread number
+        self.userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36" # user agent
+        self.secChUa = '"Not?A_Brand";v="8", "Chromium";v="113", "Google Chrome";v="113"' # sec-ch-ua
 
         s_print("[" + (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')[:-3] + "]" + f' [TASK - {self.taskNumb}] [Birkenstock] Starting Task...'))
 
+        # initializing variables
         self.pid = pid
         self.fname = fname
-        if self.fname.lower() == "random":
+        if self.fname.lower() == "random": # if first name is random, generate random first name
             self.fname = names.get_first_name(gender=random.choice(['male', 'female']))
         self.lname = lname
-        if self.lname.lower() == "random":
+        if self.lname.lower() == "random": # if last name is random, generate random last name
             self.lname = names.get_last_name()
         self.email = email
-        if "random" in self.email.lower():
+        if "random" in self.email.lower(): # if email contains random, generate random email
             self.email = self.email.lower().replace('random', f'{self.fname}.{self.lname}{str(randint(1000000000, 9999999999))}')
         self.address = address
-        self.address = self.address.replace('XXX', ''.join(random.choice(string.ascii_letters) for x in range(3)).upper())
+        self.address = self.address.replace('XXX', ''.join(random.choice(string.ascii_letters) for x in range(3)).upper()) # replace XXX with random letters
         self.number = number
         self.phone = phone
-        if self.phone.lower() == 'random':
+        if self.phone.lower() == 'random': # if phone number is random, generate random phone number
             self.phone = str(random.randint(1000000000, 9999999999))
         self.postcode = postcode
         self.city = city
@@ -61,8 +62,10 @@ class Birkenstock():
         self.delay = int(delay)
         self.webhook = webhook
         self.preload = True
+        # list of dummy products for preload process
         self.dummies = ["4052001745264","4052001745301","4052001745349","4052001745387","4052001745424","4052001745462","4052001745509","4052001745547","4052001745585","4052001745622","4052001745660","4052001745707","4052001745745","4052001745783","4052001745820","4052001745868","4052001745905","4052001745943","4052001745981","4052001746025","4052001746063","4052001746100"]
 
+        # general flow of the module
         while True:
             try:
                 self.proxy_handling()
@@ -78,6 +81,7 @@ class Birkenstock():
         s_print(self.white(message="Window is closing in 10 seconds..."))
         time.sleep(10)
 
+    # print color initialization
     def yellow(self, message):
         return "[" + (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')[:-3] + "]" + colored.yellow(f' [TASK - {self.taskNumb}] [Birkenstock] {message}'))
     
@@ -93,6 +97,7 @@ class Birkenstock():
     def white(self, message):
         return "[" + (datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S,%f')[:-3] + "]" + f' [TASK - {self.taskNumb}] [Birkenstock] {message}')
 
+    # proxy handling function
     def proxy_handling(self):
 
         with open('proxies.txt', 'r') as self.proxies_text:
@@ -113,10 +118,12 @@ class Birkenstock():
                 except IndexError:
                     self.proxies = {"http": "http://" + self.proxy, "https": "https://" + self.proxy}
 
+    # dummy atc function
     def atcDummy(self):
 
         s_print(self.yellow(message='Preloading...'))
 
+        # initializing headers
         self.headers = {
             'Host': 'www.birkenstock.com',
             'sec-ch-ua': self.secChUa,
@@ -134,6 +141,7 @@ class Birkenstock():
             'accept-language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
         }
 
+        # initializing POST data
         self.data = {
             'productCurrency': 'EUR',
             'cartAction': 'add',
@@ -143,12 +151,12 @@ class Birkenstock():
         }
 
         while True:
-            self.dummy = random.choice(self.dummies)
-            self.data['pid'] = self.dummy
+            self.dummy = random.choice(self.dummies) # random dummy choice
+            self.data['pid'] = self.dummy # setting dummy pid
             try:
-                r = self.s.post('https://www.birkenstock.com/on/demandware.store/Sites-DE-Site/en_DE/Cart-AddProduct?format=ajax', headers=self.headers, data=self.data, proxies=self.proxies)
+                r = self.s.post('https://www.birkenstock.com/on/demandware.store/Sites-DE-Site/en_DE/Cart-AddProduct?format=ajax', headers=self.headers, data=self.data, proxies=self.proxies) # POST request to add dummy to cart
                 if r.status_code == 200:
-                    if '<span class="mini-cart-quantity">\n1' in r.text:
+                    if '<span class="mini-cart-quantity">\n1' in r.text: # check if it actually carted
                         break
                     else:
                         s_print(self.red(message='Failed To Add To Cart Dummy - Retrying...'))
@@ -173,8 +181,10 @@ class Birkenstock():
                 s_print(self.red(message=f'Request Failed - {type(e).__name__}'))
                 time.sleep(self.delay)
 
+    # cart clear function
     def clearCart(self):
 
+        # initializing headers
         self.headers = {
             'Host': 'www.birkenstock.com',
             'sec-ch-ua': self.secChUa,
@@ -192,11 +202,11 @@ class Birkenstock():
 
         while True:
             try:
-                r = self.s.get('https://www.birkenstock.com/de-en/cart', headers=self.headers, proxies=self.proxies)
+                r = self.s.get('https://www.birkenstock.com/de-en/cart', headers=self.headers, proxies=self.proxies) # GET request to get cart
                 if r.status_code == 200:
                     try:
-                        url = r.text.split('<form action="')[2].split('"')[0]
-                        totalPrice = r.text.split('<input type="hidden" name="basePrice" value="')[1].split('"')[0]
+                        url = r.text.split('<form action="')[2].split('"')[0] # scrape url for applying discount by splitting the response text until it is scraped
+                        totalPrice = r.text.split('<input type="hidden" name="basePrice" value="')[1].split('"')[0] # scrape total price for applying discount by splitting the response text until it is scraped
                         break
                     except:
                         s_print(self.red(message='Failed To Get Cart - Retrying...'))
@@ -227,6 +237,7 @@ class Birkenstock():
 
             s_print(self.yellow(message='Applying Discount...'))
 
+            # initializing headers
             self.headers = {
                 'Host': 'www.birkenstock.com',
                 'cache-control': 'max-age=0',
@@ -245,6 +256,7 @@ class Birkenstock():
                 'accept-language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
             }
 
+            # initializing POST data
             self.data = {
                 'minicartPid': self.dummy,
                 'dwfrm_cart_shipments_i0_items_i0_quantity': '1',
@@ -257,9 +269,9 @@ class Birkenstock():
                 try:
                     r = self.s.post(url, headers=self.headers, data=self.data, proxies=self.proxies)
                     if r.status_code == 200:
-                        if '<span class="applied">Applied</span>' in r.text:
+                        if '<span class="applied">Applied</span>' in r.text: # check if discount was applied
                             try:
-                                url = r.text.split('<form action="')[2].split('"')[0]
+                                url = r.text.split('<form action="')[2].split('"')[0] # scrape url for cart clearance by splitting the response text until it is scraped
                                 s_print(self.blue(message='Successfully Applied Discount!'))
                                 break
                             except:
@@ -291,6 +303,7 @@ class Birkenstock():
 
         s_print(self.yellow(message='Clearing Cart...'))
 
+        # initializing headers
         self.headers = {
             'Host': 'www.birkenstock.com',
             'cache-control': 'max-age=0',
@@ -309,6 +322,7 @@ class Birkenstock():
             'accept-language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
         }
 
+        # initializing POST data
         self.data = {
             'minicartPid': self.dummy,
             'dwfrm_cart_shipments_i0_items_i0_quantity': '1',
@@ -319,9 +333,9 @@ class Birkenstock():
 
         while True:
             try:
-                r = self.s.post(url, headers=self.headers, data=self.data, proxies=self.proxies)
+                r = self.s.post(url, headers=self.headers, data=self.data, proxies=self.proxies) # send POST request to clear cart
                 if r.status_code == 200:
-                    if '<span>You have no items in your shopping cart</span>' in r.text:
+                    if '<span>You have no items in your shopping cart</span>' in r.text: # check if cart is empty
                         break
                     else:
                         s_print(self.red(message='Failed To Clear Cart - Retrying...'))
@@ -346,10 +360,12 @@ class Birkenstock():
                 s_print(self.red(message=f'Request Failed - {type(e).__name__}'))
                 time.sleep(self.delay)
 
+    # main atc function
     def atc(self):
 
         s_print(self.yellow(message='Adding To Cart...'))
 
+        # initializing headers
         self.headers = {
             'Host': 'www.birkenstock.com',
             'sec-ch-ua': self.secChUa,
@@ -367,6 +383,7 @@ class Birkenstock():
             'accept-language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
         }
 
+        # initializing POST data
         self.data = {
             'productCurrency': 'EUR',
             'cartAction': 'add',
@@ -377,9 +394,10 @@ class Birkenstock():
 
         while True:
             try:
-                r = self.s.post('https://www.birkenstock.com/on/demandware.store/Sites-DE-Site/en_DE/Cart-AddProduct?format=ajax', headers=self.headers, data=self.data, proxies=self.proxies)
+                r = self.s.post('https://www.birkenstock.com/on/demandware.store/Sites-DE-Site/en_DE/Cart-AddProduct?format=ajax', headers=self.headers, data=self.data, proxies=self.proxies) # send POST request to add to cart
                 if r.status_code == 200:
-                    if '<span class="mini-cart-quantity">\n1' in r.text:
+                    if '<span class="mini-cart-quantity">\n1' in r.text: # check if item is in cart
+                        # try to scrape all product information
                         try:
                             self.name = r.text.split('.html" title="')[1].split('"')[0]
                         except:
@@ -396,11 +414,12 @@ class Birkenstock():
                             self.image = r.text.split('<img src="')[1].split('"')[0]
                         except:
                             self.image = "https://www.birkenstock.com/on/demandware.static/Sites-DE-Site/-/default/dwcc26e7d6/images/logo.png"
-                        data = json.loads(r.text.split('dataLayer.push({ "cartProducts" : [')[1].split(']')[0])
+                        # scrape data for monitoring purposes
+                        data = json.loads(r.text.split('dataLayer.push({ "cartProducts" : [')[1].split(']')[0]) 
                         self.html = data["id"]
                         self.color = data["color"]
                         s_print(self.blue(message='Successfully Added To Cart!'))
-                        incCart()
+                        incCart() # increment cart counter
                         break
                     else:
                         s_print(self.red(message='Failed To Add To Cart - Retrying...'))
@@ -429,6 +448,7 @@ class Birkenstock():
     def checkout(self):
 
         if self.preload == True:
+            # initializing headers
             self.headers = {
                 'Host': 'www.birkenstock.com',
                 'sec-ch-ua': self.secChUa,
@@ -446,9 +466,10 @@ class Birkenstock():
 
             while True:
                 try:
-                    r = self.s.get('https://www.birkenstock.com/de-en/cart', headers=self.headers, proxies=self.proxies)
+                    r = self.s.get('https://www.birkenstock.com/de-en/cart', headers=self.headers, proxies=self.proxies) # GET request to get cart
                     if r.status_code == 200:
                         try:
+                            # scrape checkout values from cart page
                             user = r.text.split('<input class="input-text input-email email required" id="')[1].split('"')[0]
                             pw = r.text.split('<input class="input-text input-password required" id="')[1].split('"')[0]
                             securekey = r.text.split('<input type="hidden" name="dwfrm_login_securekey" value="')[1].split('"')[0]
@@ -479,6 +500,7 @@ class Birkenstock():
                     time.sleep(self.delay)
                     continue
 
+            # initializing headers
             self.headers = {
                 'Host': 'www.birkenstock.com',
                 'cache-control': 'max-age=0',
@@ -497,6 +519,7 @@ class Birkenstock():
                 'accept-language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
             }
 
+            # initializing data
             self.data = [
                 ('dwfrm_cart_guestCheckout', 'true'),
                 (user, ''),
@@ -509,10 +532,11 @@ class Birkenstock():
 
             while True:
                 try:
-                    r = self.s.post('https://www.birkenstock.com/on/demandware.store/Sites-DE-Site/en_DE/Login-CartLogin', headers=self.headers, data=self.data, proxies=self.proxies)
+                    r = self.s.post('https://www.birkenstock.com/on/demandware.store/Sites-DE-Site/en_DE/Login-CartLogin', headers=self.headers, data=self.data, proxies=self.proxies) # POST request to linitialize checkout
                     if r.status_code == 200:
-                        if 'https://www.birkenstock.com/de-en/checkout' == r.url:
+                        if 'https://www.birkenstock.com/de-en/checkout' == r.url: # check if checkout was initialized
                             try:
+                                # scrape checkout values from checkout page
                                 url = r.text.split('<form action="')[1].split('"')[0]
                                 securekey = r.text.split('<input type="hidden" name="dwfrm_singleshipping_securekey" value="')[1].split('"')[0]
                                 break
@@ -591,10 +615,11 @@ class Birkenstock():
 
             while True:
                 try:
-                    r = self.s.post(url, headers=self.headers, data=self.data, proxies=self.proxies)
+                    r = self.s.post(url, headers=self.headers, data=self.data, proxies=self.proxies) # POST request to submit shipping
                     if r.status_code == 200:
-                        if r.text.split('<title>')[1].split('</title>')[0] == 'Checkout - pay':
+                        if r.text.split('<title>')[1].split('</title>')[0] == 'Checkout - pay': # Check if shipping was submitted successfully else invalid shipping address
                             try:
+                                # scrape new checkout values for payment
                                 url = r.text.split('<form action="')[1].split('"')[0]
                                 securekey = r.text.split('<input type="hidden" name="dwfrm_billing_securekey" value="')[1].split('"')[0]
                                 securetoken = r.text.split('merchantToken&quot;:&quot;')[1].split('&')[0].strip()
@@ -626,6 +651,7 @@ class Birkenstock():
                     time.sleep(self.delay)
                     continue
 
+            # initializing headers
             self.headers = {
                 'Host': 'www.arvato-payment.de',
                 'sec-ch-ua': self.secChUa,
@@ -641,6 +667,7 @@ class Birkenstock():
                 'Accept-Language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
             }
 
+            # initializing query parameters
             self.params = {
                 'callback': 'jQuery35103284109753818325_1673036270638',
                 'SecurityToken': securetoken,
@@ -651,9 +678,10 @@ class Birkenstock():
 
             while True:
                 try:
-                    res = self.s.get('https://www.arvato-payment.de/Birkenstock-Adyen/Pmg.Site/V21/JsonPaymentService/SaveEncryptedData', headers=self.headers, params=self.params, proxies=self.proxies)
+                    res = self.s.get('https://www.arvato-payment.de/Birkenstock-Adyen/Pmg.Site/V21/JsonPaymentService/SaveEncryptedData', headers=self.headers, params=self.params, proxies=self.proxies) # GET request to get payment token
                     if res.status_code == 200:
                         try:
+                            # parsing payment token from response
                             token = res.text.split('PaymentToken":"')[1].split('"')[0]
                             break
                         except:
@@ -681,6 +709,7 @@ class Birkenstock():
                     time.sleep(self.delay)
                     continue
 
+            # initializing headers
             self.headers = {
                 'Host': 'www.birkenstock.com',
                 'cache-control': 'max-age=0',
@@ -699,6 +728,7 @@ class Birkenstock():
                 'accept-language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
             }
 
+            # initializing data
             self.data = {
                 'dwfrm_billing_securekey': securekey,
                 'dwfrm_billing_paymentToken': token,
@@ -722,10 +752,11 @@ class Birkenstock():
 
             while True:
                 try:
-                    r = self.s.post(url, headers=self.headers, data=self.data, proxies=self.proxies)
+                    r = self.s.post(url, headers=self.headers, data=self.data, proxies=self.proxies) # POST request to submit payment
                     if r.status_code == 200:
-                        if r.text.split('<title>')[1].split('</title>')[0] == 'Checkout - review order':
+                        if r.text.split('<title>')[1].split('</title>')[0] == 'Checkout - review order': # checking if request was successful
                             try:
+                                # scrape last checkout values for order submission
                                 self.orderUrl = r.text.split('<form action="')[1].split('"')[0]
                                 self.securekey = r.text.split('<input type="hidden" name="dwfrm_summary_securekey" value="')[1].split('"')[0]
                                 self.last = r.url
@@ -759,8 +790,10 @@ class Birkenstock():
 
         else:
 
+            # monitoring request until product is in stock again
             s_print(self.yellow(message='Getting Product...'))
 
+            # initializing headers
             self.headers = {
                 'Host': 'www.birkenstock.com',
                 'sec-ch-ua': self.secChUa,
@@ -776,6 +809,7 @@ class Birkenstock():
                 'accept-language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
             }
 
+            # initializing query parameters
             self.params = {
                 'pid': self.html,
                 f'dwvar_{self.html}_color': self.color,
@@ -787,25 +821,25 @@ class Birkenstock():
 
             while True:
                 try:
-                    r = self.s.get('https://www.birkenstock.com/on/demandware.store/Sites-DE-Site/en_DE/Product-Variation', headers=self.headers, params=self.params, proxies=self.proxies)
+                    r = self.s.get('https://www.birkenstock.com/on/demandware.store/Sites-DE-Site/en_DE/Product-Variation', headers=self.headers, params=self.params, proxies=self.proxies) # GET request to get product
                     if r.status_code == 200:
-                        sizes = re.findall('(?<=<li class="selectable " data-region="EU">)[^>]+',r.text)
-                        if sizes == []:
+                        sizes = re.findall('(?<=<li class="selectable " data-region="EU">)[^>]+',r.text) # scraping all in stock sizes by using regex
+                        if sizes == []: # checking if product is in stock and continuing if not
                             s_print(self.yellow(message='Monitoring...'))
                             time.sleep(self.delay)
                         else:
                             break
                     elif r.status_code == 429:
-                        s_print(self.red(message='Get Cart: Rate Limited [429] - Retrying...'))
+                        s_print(self.red(message='Get Product: Rate Limited [429] - Retrying...'))
                         time.sleep(self.delay)
                     elif r.status_code == 403:
-                        s_print(self.red(message='Get Cart: Proxy Banned [403] - Retrying...'))
+                        s_print(self.red(message='Get Product: Proxy Banned [403] - Retrying...'))
                         time.sleep(self.delay)
                     elif r.status_code == 404:
-                        s_print(self.red(message='Get Cart: Not Found [404] - Retrying...'))
+                        s_print(self.red(message='Get Product: Not Found [404] - Retrying...'))
                         time.sleep(self.delay)
                     else:
-                        s_print(self.red(message=f'Get Cart: Error [{str(r.status_code)}] - Retrying...'))
+                        s_print(self.red(message=f'Get Product: Error [{str(r.status_code)}] - Retrying...'))
                         time.sleep(self.delay)
                 except ProxyError:
                     s_print(self.red(message='Proxy Error - Retrying...'))
@@ -816,8 +850,10 @@ class Birkenstock():
                     time.sleep(self.delay)
                     continue
 
+            # submit order request
             s_print(self.yellow(message='Submitting Order...'))
 
+            # initializing headers
             self.headers = {
                 'Host': 'www.birkenstock.com',
                 'cache-control': 'max-age=0',
@@ -836,6 +872,7 @@ class Birkenstock():
                 'accept-language': 'de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7',
             }
 
+            # initializing data
             self.data = {
                 'minicartPid': self.pid,
                 'currency': 'EUR',
@@ -847,12 +884,13 @@ class Birkenstock():
 
             while True:
                 try:
-                    r = self.s.post(self.orderUrl, headers=self.headers, data=self.data, proxies=self.proxies, allow_redirects=False)
+                    r = self.s.post(self.orderUrl, headers=self.headers, data=self.data, proxies=self.proxies, allow_redirects=False) # POST request to submit order with redirects disabled to get checkout url from location response header
                     if r.status_code == 302:
                         try:
-                            if r.text.split('<title>')[1].split('</title>')[0] == 'Redirect to payment provider':
-                                s_print(self.green(message='Successful Checkout: ' + r.headers['Location']))
-                                incSuccess()
+                            if r.text.split('<title>')[1].split('</title>')[0] == 'Redirect to payment provider': # check if order submission was successful by looking at the title of the html response
+                                s_print(self.green(message='Successful Checkout: ' + r.headers['Location'])) # printing checkout url
+                                incSuccess() # incrementing success counter
+                                # posting discord webhook with checkout information if webhook is set
                                 try:
                                     webhook = DiscordWebhook(url=self.webhook, avatar_url='https://www.birkenstock.com/on/demandware.static/Sites-DE-Site/-/default/dwcc26e7d6/images/logo.png', username="BirkenstockAIO")
                                     embed = DiscordEmbed(title=f"Complete Payment", url=r.headers['Location'], color=0x023F85)
@@ -869,10 +907,10 @@ class Birkenstock():
                                     webhook.execute()
                                 except:
                                     pass
-                                conn = sqlite3.connect('checkouts.db')
-                                conn.execute(f"INSERT INTO CHECKOUTS (NAME,SIZE,IMAGE,PRICE,LINK,DISCOUNT) VALUES ('{self.name}', '{self.size}', '{self.image}', {float(self.price)},'{r.headers['Location']}','{self.discount}')")
-                                conn.commit()
-                                conn.close()
+                                conn = sqlite3.connect('checkouts.db') # connect to checkouts database
+                                conn.execute(f"INSERT INTO CHECKOUTS (NAME,SIZE,IMAGE,PRICE,LINK,DISCOUNT) VALUES ('{self.name}', '{self.size}', '{self.image}', {float(self.price)},'{r.headers['Location']}','{self.discount}')") # insert checkout into database
+                                conn.commit() # commit changes
+                                conn.close() # close connection
                                 break
                             else:
                                 s_print(self.red(message='Failed Checkout'))
